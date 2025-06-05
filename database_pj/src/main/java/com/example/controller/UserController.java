@@ -2,6 +2,7 @@ package com.example.controller;
 
 import com.example.dto.*;
 import com.example.entity.RepairRecord;
+import com.example.entity.User;
 import com.example.service.UserService;
 import com.example.service.VehicleService;
 import jakarta.servlet.http.Cookie;
@@ -45,7 +46,7 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ApiResponse<Void> login(@RequestBody LoginRequest request, HttpServletResponse response) {
+    public ApiResponse<UserDTO> login(@RequestBody LoginRequest request, HttpServletResponse response) {
         return userService.login(request, response);
     }
 

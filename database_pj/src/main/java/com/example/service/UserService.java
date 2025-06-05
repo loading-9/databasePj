@@ -73,7 +73,7 @@ public class UserService {
     }
 
     //登录
-    public ApiResponse<Void> login(LoginRequest request, HttpServletResponse response) {
+    public ApiResponse<UserDTO> login(LoginRequest request, HttpServletResponse response) {
         User user = userRepository.findByUsername(request.username());
 
         if (user == null){
@@ -97,7 +97,8 @@ public class UserService {
         // cookie.setDomain("localhost"); // 可选：设置域名
         response.addCookie(cookie);
         //response.setHeader("Set-Cookie", "token=" + token + "; Path=/; Max-Age=3600; HttpOnly; SameSite=Lax");
-        return new ApiResponse<>(HttpStatus.OK.value(), "登录成功!", null);
+
+        return new ApiResponse<>(HttpStatus.OK.value(), "登录成功!", new UserDTO(user));
     }
 
 
