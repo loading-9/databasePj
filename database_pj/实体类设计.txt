@@ -145,7 +145,13 @@ Response:
      {
   "code": 200,
   "message": "登录成功!",
-  "data": null
+   "data": {
+    "username": "loading2",
+    "name": "sy",
+    "id": 4,
+    "contactInfo": "137",
+    "registerTime": "2025-06-02T23:43:21.1409664"
+  }
 }
 
 3.提交汽车
@@ -402,11 +408,18 @@ Response:
      }
      ```
    - **响应**:
-
 {
   "code": 200,
   "message": "登录成功!",
-  "data": null
+  "data": {
+    "technicianId": 1,
+    "username": "loading1",
+    "name": "sy",
+    "jobType": "漆工",
+    "hourlyRate": 50.0,
+    "contactInfo": "137",
+    "income": 50.0
+  }
 }
    - **说明**: 验证维修人员身份
 
