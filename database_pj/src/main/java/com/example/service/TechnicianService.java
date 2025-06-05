@@ -69,7 +69,7 @@ public class TechnicianService {
     }
 
     //登录
-    public ApiResponse<Void> login(LoginRequest request, HttpServletResponse response) {
+    public ApiResponse<TechnicianDTO> login(LoginRequest request, HttpServletResponse response) {
         Technician technician = technicianRepository.findByUsername(request.username()).orElse(null);
         if (technician == null){
             throw new InvalidRequestException("用户不存在!");
@@ -87,7 +87,7 @@ public class TechnicianService {
         cookie.setSecure(false); // 如果部署到 HTTPS，这里要改为 true
         response.addCookie(cookie);
         //response.setHeader("Set-Cookie", "token=" + token + "; Path=/; Max-Age=3600; HttpOnly; SameSite=Lax");
-        return new ApiResponse<>(HttpStatus.OK.value(), "登录成功!", null);
+        return new ApiResponse<>(HttpStatus.OK.value(), "登录成功!", new TechnicianDTO(technician));
     }
 
     public ApiResponse<TechnicianDTO> getTechnicianInfo(Long technicianId) {

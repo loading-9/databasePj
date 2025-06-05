@@ -25,7 +25,7 @@ public class TechnicianController {
     }
 
     @PostMapping("/login")
-    public ApiResponse<Void> login(@RequestBody LoginRequest request, HttpServletResponse response) {
+    public ApiResponse<TechnicianDTO> login(@RequestBody LoginRequest request, HttpServletResponse response) {
         return technicianService.login(request, response);
     }
 
