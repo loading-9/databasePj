@@ -63,7 +63,8 @@ public class UserService {
         User user = new User();
         user.setUsername(request.username());
         user.setName(request.name());
-        user.setPassword(PasswordUtil.encryptPassword(password)); //密码加密
+        // user.setPassword(PasswordUtil.encryptPassword(password)); //密码加密
+        user.setPassword(password);
         user.setContactInfo(request.contactInfo());
         user.setRegisterTime(LocalDateTime.now());
         user = userRepository.save(user);
@@ -180,6 +181,23 @@ public class UserService {
                 notification.getType(),
                 notification.getRemindTime()
         ));
+    }
+
+    public ApiResponse<List<RepairRecordDTO>> getUserRepairRecords(Long userId) {
+        List<WorkOrder> workOrders = workOrderRepository.findByUserId(userId);
+        List<RepairRecordDTO> recordDTOs = new ArrayList<>();
+        for (WorkOrder workOrder : workOrders) {
+            RepairRecord repairRecord = repairRecordRepository.findByWorkOrder(workOrder);
+            if (repairRecord != null) {
+                recordDTOs.add(new RepairRecordDTO(
+                        repairRecord,
+                        workOrder,
+                        repairRecord.getTechnician(),
+                        workOrder.getUser()
+                ));
+            }
+        }
+        return new ApiResponse<>(200, "维修记录查询成功", recordDTOs);
     }
 
     private void validateUser(User user) {

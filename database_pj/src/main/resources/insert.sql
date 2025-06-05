@@ -129,3 +129,17 @@ CREATE TABLE work_order_technician (
                                        FOREIGN KEY (work_order_id) REFERENCES work_order(work_order_id),
                                        FOREIGN KEY (technician_id) REFERENCES technician(technician_id)
 );
+
+CREATE TABLE operation_log (
+                               log_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                               entity_type VARCHAR(50) NOT NULL, -- 实体类型（如 WorkOrder, Technician）
+                               entity_id BIGINT NOT NULL, -- 实体ID
+                               operation VARCHAR(50) NOT NULL, -- 操作类型（INSERT, UPDATE, DELETE）
+                               old_data TEXT, -- 变更前的JSON数据
+                               new_data TEXT, -- 变更后的JSON数据
+                               operation_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+                               operated_by BIGINT, -- 操作者ID（如 technician_id 或 user_id）
+                               INDEX idx_entity_type (entity_type),
+                               INDEX idx_entity_id (entity_id)
+);
+

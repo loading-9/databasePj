@@ -6,4 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
     boolean existsByWorkOrder(WorkOrder workOrder);
+
+    Feedback findByWorkOrder(WorkOrder workOrder);
 }

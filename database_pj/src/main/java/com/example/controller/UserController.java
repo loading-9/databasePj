@@ -1,6 +1,7 @@
 package com.example.controller;
 
 import com.example.dto.*;
+import com.example.entity.RepairRecord;
 import com.example.service.UserService;
 import com.example.service.VehicleService;
 import jakarta.servlet.http.Cookie;
@@ -75,7 +76,7 @@ public class UserController {
 
     @PostMapping("/{userId}/submitVehicle")
     public ApiResponse<VehicleResponse> submitVehicle(@PathVariable Long userId, @RequestBody VehicleSubmitRequest vehicleSubmitRequest) {
-        return vehicleService.submitVehicle(Math.toIntExact(userId), vehicleSubmitRequest);
+        return vehicleService.submitVehicle(userId, vehicleSubmitRequest);
     }
 
     @PostMapping("/{userId}/submitWorkOrder")
@@ -91,6 +92,11 @@ public class UserController {
     @PostMapping("/work-orders/{workOrderId}/remind")
     public ApiResponse<NotificationDTO> remindWorkOrder(@PathVariable Long workOrderId, @RequestBody NotificationDTO notificationDTO) {
         return userService.remindWorkOrder(workOrderId, notificationDTO.userId(), notificationDTO.message());
+    }
+
+    @GetMapping("/{userId}/repair-records")
+    public ApiResponse<List<RepairRecordDTO>> getUserRepairRecords(@PathVariable Long userId) {
+        return userService.getUserRepairRecords(userId);
     }
 
 }

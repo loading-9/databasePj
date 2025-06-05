@@ -3,6 +3,7 @@ package com.example.service;
 
 import com.example.dto.*;
 import com.example.entity.*;
+import com.example.exception.InvalidRequestException;
 import com.example.repository.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -10,9 +11,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 @CrossOrigin(origins = "http://localhost:5173",allowCredentials = "true")
 @Service
@@ -25,9 +28,10 @@ public class VehicleService {
     private final WorkOrderTechnicianRepository workOrderTechnicianRepository;
     private final NotificationRepository notificationRepository;
     private final TechnicianRepository technicianRepository;
+    private final FeedbackRepository feedbackRepository;
 
     @Transactional
-    public ApiResponse<VehicleResponse> submitVehicle(int userId, VehicleSubmitRequest request) {
+    public ApiResponse<VehicleResponse> submitVehicle(Long userId, VehicleSubmitRequest request) {
         logger.info("Received submitVehicle request for userId: {}, request: {}", userId, request);
 
         try {
@@ -58,7 +62,8 @@ public class VehicleService {
                     request.licencePlate(),
                     request.vehicleType(),
                     request.brand(),
-                    request.manufactureYear()
+                    request.manufactureYear(),
+                    userId
             );
 
             logger.info("Vehicle submitted successfully with ID: {}", vehicleId);
@@ -113,14 +118,7 @@ public class VehicleService {
 
             // 构造响应数据
             WorkOrderResponse response = new WorkOrderResponse(
-                    workOrderId,
-                    new VehicleResponse(vehicle.getVehicleId(), vehicle.getLicensePlate(), vehicle.getVehicleType(), vehicle.getBrand(), vehicle.getManufactureYear()),
-                    WorkOrderStatus.待分配,
-                    null,
-                    request.problem(),
-                    submitTime,
-                    0.0, // progress 初始为 0
-                    null
+                    Objects.requireNonNull(workOrderRepository.findById(workOrderId).orElse(null))
             );
 
             assignWorkOrder(workOrderId, workOrderId, jobType, 0L);
@@ -156,5 +154,15 @@ public class VehicleService {
         } else {
             return false;
         }
+    }
+
+    public ApiResponse<FeedbackDTO> getFeedBack(Long workOrdersId) {
+        WorkOrder workOrder = workOrderRepository.findById(workOrdersId).orElse(null);
+        Feedback feedback = feedbackRepository.findByWorkOrder(workOrder);
+        if (feedback == null) {
+            throw new InvalidRequestException("No Feedback found for work order: " + workOrdersId);
+        }
+        FeedbackDTO feedbackDTO = new FeedbackDTO(feedback);
+        return new ApiResponse<>(200, "查询成功", feedbackDTO);
     }
 }

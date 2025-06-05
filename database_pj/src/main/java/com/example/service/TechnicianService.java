@@ -57,7 +57,8 @@ public class TechnicianService {
         Technician technician = new Technician();
         technician.setUsername(request.username());
         technician.setName(request.name());
-        technician.setPassword(PasswordUtil.encryptPassword(password)); //密码加密
+        // technician.setPassword(PasswordUtil.encryptPassword(password)); //密码加密
+        technician.setPassword(password);
         technician.setContactInfo(request.contactInfo());
         technician.setJobType(request.jobType());
         technician.setHourlyRate(request.hourlyRate());
@@ -139,10 +140,32 @@ public class TechnicianService {
             return new ApiResponse<>(400, "工单未分配给该维修人员或不存在", null);
         }
         workOrder.setProgress(progress);
+        workOrder.setProgressDescription(description);
         if (progress >= 1) {
             workOrder.setStatus(WorkOrderStatus.已完成);
             workOrder.setCompleteTime(LocalDateTime.now());
+
+            // 计算工时费（假设工时为固定值或从其他字段获取）
+            double workHours = 1.0; // 假设工时为 1 小时，可根据实际逻辑替换
+            double laborCost = technician.getHourlyRate() * workHours;
+            workOrder.setLaborCost(laborCost);
+
+            // 计算材料费
+            List<Material> materials = materialRepository.findByWorkOrder(workOrder);
+            double materialCost = materials.stream()
+                    .mapToDouble(Material::getTotalPrice)
+                    .sum();
+            workOrder.setMaterialCost(materialCost);
+            workOrder.setTotalCost(materialCost + laborCost);
+
             workOrderRepository.save(workOrder);
+
+            // 更新员工收入（增加工时费）
+            double currentIncome = technician.getIncome();
+            technician.setIncome(currentIncome + laborCost);
+            technicianRepository.save(technician);
+
+
             RepairRecord record = new RepairRecord();
             record.setWorkOrder(workOrder);
             record.setTechnician(technician);
@@ -170,6 +193,20 @@ public class TechnicianService {
         return new ApiResponse<>(201, "材料记录成功", new MaterialDTO(material.getMaterialId(), workOrderId, material.getMaterialName(), material.getQuantity(), material.getUnitPrice(), material.getTotalPrice()));
     }
 
+
+    public ApiResponse<List<WorkOrderResponse>> getTechnicianWorkOrders(Long technicianId) {
+        Technician technician = technicianRepository.findById(technicianId).orElse(null);
+        if (technician == null) {
+            throw new InvalidRequestException("维修人员不存在");
+        }
+        List<WorkOrder> workOrders = workOrderRepository.findByTechnician(technician);
+        List<WorkOrderResponse> workOrderResponses = new ArrayList<>();
+        for (WorkOrder workOrder : workOrders) {
+            workOrderResponses.add(new WorkOrderResponse(workOrder));
+        }
+        return new ApiResponse<>(HttpStatus.OK.value(), "工单查看成功", workOrderResponses);
+    }
+
     public ApiResponse<List<RepairRecordDTO>> getRepairRecords(Long technicianId) {
         if (!technicianRepository.existsById(technicianId)) {
             return new ApiResponse<>(404, "维修人员不存在", null);
@@ -179,11 +216,20 @@ public class TechnicianService {
         if (technician != null) {
             records = technician.getRepairRecords();
         }
-        List<RepairRecordDTO> recordDTOs = records.stream().map(r -> new RepairRecordDTO(r.getRecordId(), r.getWorkOrder().getWorkOrderId(), r.getTechnician().getTechnicianId(), r.getDescription(), r.getRepairTime())).collect(Collectors.toList());
+        List<RepairRecordDTO> recordDTOs = records.stream().map(r -> new RepairRecordDTO(
+                r,
+                r.getWorkOrder(),
+                r.getTechnician(),
+                r.getWorkOrder().getUser()
+        )).collect(Collectors.toList());
         return new ApiResponse<>(200, "查询成功", recordDTOs);
     }
 
-    public ApiResponse<List<NotificationDTO>> getNotifications(Long technicianId) {
+    // 其他方法保持不变，省略...
+
+
+
+public ApiResponse<List<NotificationDTO>> getNotifications(Long technicianId) {
         if (!technicianRepository.existsById(technicianId)) {
             return new ApiResponse<>(404, "维修人员不存在", null);
         }

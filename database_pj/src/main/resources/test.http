@@ -26,7 +26,7 @@ POST http://localhost:3000/api/user/1/submitVehicle
 Content-Type: application/json
 
 {
-  "licencePlate": "22345",
+  "licencePlate": "12345",
   "vehicleType" : "suv",
   "brand" : "benz",
   "manufactureYear" : 2000
@@ -50,3 +50,21 @@ GET http://localhost:3000/api/user/1/vehicles
 GET http://localhost:3000/api/user/1/work-orders
 ###
 
+###
+POST http://localhost:3000/api/user/work-orders/1/feedback
+Content-Type: application/json
+
+{
+  "feedbackId": 0,
+  "workOrderId": 1,
+  "userId": 1,
+  "rating": 5,
+  "comment": "还可以",
+  "feedbackTime": ""
+}
+
+###
+GET http://localhost:3000/api/user/1/repair-records
+
+###
+GET http://localhost:3000/api/work-orders/1/feedback

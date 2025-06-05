@@ -21,4 +21,8 @@ public interface TechnicianRepository extends JpaRepository<Technician, Long> {
 
     @Query("SELECT t FROM Technician t WHERE t.jobType = :jobType AND t.technicianId > :technicianId")
     List<Technician> findByJobTypeAndTechnicianIdGreaterThan(@Param("jobType") JobType jobType, @Param("technicianId") Long technicianId);
+
+    @Query("SELECT t FROM Technician t")
+    List<Technician> findAllTechniciansSummary();
+
 }

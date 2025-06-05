@@ -57,6 +57,10 @@ public class TechnicianController {
         return technicianService.addMaterial(workOrderId, technicianId, materialDTO);
     }
 
+    @GetMapping("/{technicianId}/work-orders")
+    public ApiResponse<List<WorkOrderResponse>> getWorkOrders(@PathVariable Long technicianId) {
+        return technicianService.getTechnicianWorkOrders(technicianId);
+    }
     @GetMapping("/{technicianId}/repair-records")
     public ApiResponse<List<RepairRecordDTO>> getHistory(@PathVariable Long technicianId) {
         return technicianService.getRepairRecords(technicianId);

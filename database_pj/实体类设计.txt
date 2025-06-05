@@ -95,14 +95,6 @@ ER 图包含上述实体及其属性，关系通过外键和中间表体现。�
 ```
 
 
- 为了完成车辆维修管理系统的接口设计和实现，我们需要基于任务需求设计一套 RESTful API 接口，涵盖用户、维修人员和管理员的功能需求，并提供示例实现。以下将：
-
-1. **设计 RESTful API 接口**：包括接口路径、方法、请求/响应格式，覆盖用户注册登录、报修、查询、反馈，维修人员工单管理，管理员数据管理等功能。
-2. **提供示例实现**：使用 Java Spring Boot 实现核心接口，基于之前的实体类（artifact_id: f4b0f63d-a120-4180-8540-9afabf648b46）与 MySQL 数据库（artifact_id: cb53a171-ff61-4048-b4c4-7056029da485）交互。
-3. **确保功能完整性**：支持事务控制、数据一致性和查询分析需求。
-
----
-
 ### 接口设计
 
 以下是 RESTful API 接口设计，分为用户、维修人员和管理员功能模块。每个接口包括路径、HTTP 方法、请求参数、响应格式和说明。
@@ -138,7 +130,7 @@ Response:
     "registerTime": "2025-06-02T23:43:21.1409664"
   }
 }
-   - **说明**: 创建新用户，密码需加密存储。
+   - **说明**: 创建新用户，密码无需加密存储。
 
 2. **用户登录**
    - **路径**: `POST /api/user/login`
@@ -177,6 +169,7 @@ Response:
     "vehicleType": "suv",
     "brand": "benz",
     "manufactureYear": 2000
+    "userId": 1
   }
 }
 
@@ -229,8 +222,6 @@ Response:
   }
 }
        ```
-     - 404 Not Found: `{ "error": "用户不存在" }`
-   - **说明**: 查询用户账户信息
 
 5.查询用户车辆
 路径 GET http://localhost:3000/api/user/{userId}/vehicles
@@ -263,7 +254,7 @@ Response:
    - **响应**:
      - 200 OK:
        ```json
-       {
+{
   "code": 200,
   "message": "工单查看成功",
   "data": [
@@ -273,10 +264,11 @@ Response:
         "vehicleId": 1,
         "licencePlate": "12345",
         "vehicleType": "suv",
-        "brand": "bmw",
-        "manufactureYear": 2000
+        "brand": "benz",
+        "manufactureYear": 2000,
+        "userId": 1
       },
-      "workOrderStatus": "进行中",
+      "workOrderStatus": "已完成",
       "technicianDto": {
         "technicianId": 1,
         "username": "loading1",
@@ -284,28 +276,15 @@ Response:
         "jobType": "漆工",
         "hourlyRate": 50.0,
         "contactInfo": "137",
-        "income": 0.0
+        "income": 50.0
       },
-      "problem": "车轮掉了",
-      "submitTime": "2025-05-31T21:04:40",
-      "progress": 0.0,
-      "progressDescription": null
-    },
-    {
-      "workOrderId": 2,
-      "vehicleResponse": {
-        "vehicleId": 4,
-        "licencePlate": "22345",
-        "vehicleType": "suv",
-        "brand": "benz",
-        "manufactureYear": 2000
-      },
-      "workOrderStatus": "待分配",
-      "technicianDto": null,
       "problem": "掉漆",
-      "submitTime": "2025-06-03T00:44:37",
-      "progress": 0.0,
-      "progressDescription": null
+      "submitTime": "2025-06-04T23:18:53",
+      "progress": 1.0,
+      "progressDescription": "做完了"
+      "laborCost": 50.0,
+      "materialCost": 1.8,
+      "totalCost": 51.8
     }
   ]
 }
@@ -314,19 +293,103 @@ Response:
    - **说明**: 查询用户的所有工单信息。
 
 6. **提交反馈**
-   - **路径**: `POST /api/work-orders/{workOrderId}/feedback`
+   - **路径**: `POST http://localhost:3000/api/user/work-orders/{workOrderId}/feedback
    - **请求参数**:
-     ```json
-     {
-       "userId": int,
-       "rating": int,
-       "comment": "string"
-     }
-     ```
+ {
+  "feedbackId": 任意,
+  "workOrderId": 1, --对应workOrderId
+  "userId": 1,
+  "rating": 5,
+  "comment": "还可以",
+  "feedbackTime": "" null
+}
+
    - **响应**:
-     - 201 Created: `{ "feedbackId": int, "workOrderId": int, "rating": int, "comment": "string" }`
-     - 400 Bad Request: `{ "error": "工单未完成或已存在反馈" }`
+{
+  "code": 201,
+  "message": "反馈提交成功",
+  "data": {
+    "feedbackId": 0,
+    "workOrderId": 1,
+    "userId": 1,
+    "rating": 5,
+    "comment": "还可以",
+    "feedbackTime": null
+  }
+}
+     
+
+
    - **说明**: 用户对已完成的工单提交评分和评论。
+
+7.查询历史维修记录
+GET http://localhost:3000/api/user/{{userId}}/repair-records
+注:feedback字段可能为null,表示没有用户反馈
+该接口相当于展示已完成的工单，并直接展开所有反馈
+Response:
+{
+  "code": 200,
+  "message": "维修记录查询成功",
+  "data": [
+    {
+      "recordId": 1,
+      "workOrder": {
+        "workOrderId": 1,
+        "vehicleResponse": {
+          "vehicleId": 1,
+          "licencePlate": "12345",
+          "vehicleType": "suv",
+          "brand": "benz",
+          "manufactureYear": 2000,
+          "userId": 1
+        },
+        "workOrderStatus": "已完成",
+        "technicianDto": {
+          "technicianId": 1,
+          "username": "loading1",
+          "name": "sy",
+          "jobType": "漆工",
+          "hourlyRate": 50.0,
+          "contactInfo": "137",
+          "income": 50.0
+        },
+        "problem": "掉漆",
+        "submitTime": "2025-06-04T22:23:47",
+        "progress": 1.0,
+        "progressDescription": "做完了"
+	      "laborCost": 50.0,
+      "materialCost": 1.8,
+      "totalCost": 51.8
+      },
+      "technician": {
+        "technicianId": 1,
+        "username": "loading1",
+        "name": "sy",
+        "jobType": "漆工",
+        "hourlyRate": 50.0,
+        "contactInfo": "137",
+        "income": 50.0
+      },
+      "user": {
+        "username": "loading1",
+        "name": "sy",
+        "id": 1,
+        "contactInfo": "137",
+        "registerTime": "2025-05-31T21:04:40"
+      },
+      "description": "做完了",
+      "repairTime": "2025-06-04T22:24:06",
+      "feedback": {
+        "feedbackId": 1,
+        "workOrderId": 1,
+        "userId": 1,
+        "rating": 5,
+        "comment": "还可以",
+        "feedbackTime": "2025-06-04T22:26:50"
+      }
+    }
+  ]
+}
 
 #### 维修人员功能接口
 1. **维修人员登录**
@@ -369,7 +432,7 @@ Response:
    - **说明**: 查询维修人员账户信息。
 
 3. **接收/拒绝工单**
-   - **路径**: PUT http://localhost:3000/api/technicians/{technicianId}/work-orders/{workOrderId}/updateStatus`
+   - **路径**: PUT http://localhost:3000/api/technicians/{{technicianId}}/work-orders/{{notificationId}}/{{workOrderId}}/updateStatus
    - **请求参数**:
      ```json
      {
@@ -405,17 +468,17 @@ Response:
     "progressDescription": null
   }
 }
-   - **说明**: 维修人员接受或拒绝工单，拒绝后系统重新分配。
+   - **说明**: 维修人员根据notification接受或拒绝工单，拒绝后系统重新分配。
 
 4. **更新维修进度**
    - **路径**:PUT http://localhost:3000/api/technicians/{technicianId}/work-orders/{workOrderId}/progress
    - **请求参数**:
     {
-    "progress": 0.5 ,
+    "progress": 0.5 , // 大于等于1表示做完了
     "description": "做了一半"
 }
    - **响应**:
-    {
+ {
   "code": 200,
   "message": "进度更新成功",
   "data": {
@@ -424,8 +487,9 @@ Response:
       "vehicleId": 1,
       "licencePlate": "12345",
       "vehicleType": "suv",
-      "brand": "bmw",
-      "manufactureYear": 2000
+      "brand": "benz",
+      "manufactureYear": 2000,
+      "userId": 1
     },
     "workOrderStatus": "进行中",
     "technicianDto": {
@@ -437,10 +501,11 @@ Response:
       "contactInfo": "137",
       "income": 0.0
     },
-    "problem": "车轮掉了",
-    "submitTime": "2025-05-31T21:04:40",
+    "problem": "掉漆",
+    "submitTime": "2025-06-04T23:18:53",
     "progress": 0.5,
-    "progressDescription": null
+    "progressDescription": "做完了",
+    "feedback": null
   }
 }
    - **说明**: 维修人员更新工单进度并记录维修描述。
@@ -458,14 +523,14 @@ Response:
 }
      ```
    - **响应**:
-    {
+{
   "code": 201,
   "message": "材料记录成功",
   "data": {
     "materialId": 1,
     "workOrderId": 1,
     "materialName": "wood",
-    "quantity": 2,
+    "quantity": 2.0,
     "unitPrice": 0.9,
     "totalPrice": 1.8
   }
@@ -483,244 +548,126 @@ Resposne
   "data": []
 }
 有记录时
+同用户查询历史记录返回结果
+
+7.查询工单
+GET http://localhost:3000/api/technicians/{{technicianId}}/work-orders
+返回结果同用户查询工单，返回所有工单，包括已完成的工单
+
+特殊接口:
+
+###
+GET http://localhost:3000/api/work-orders/{{workOrderId}}/feedback
+查询某一条已完成工单的反馈
+（前端在展示工单时，对已完成的工单可以有一个查看反馈按钮，在按下之后调用该接口获取反馈。当该工单没有反馈时，返回错误码为200，前端应当显示暂无反馈
+
 {
   "code": 200,
   "message": "查询成功",
+  "data": {
+    "feedbackId": 1,
+    "userId": 0,
+    "rating": 5,
+    "comment": "还可以",
+    "feedbackTime": "2025-06-04T23:29:24"
+  }
+}
+
+
+管理员接口
+
+1. 查询所有用户信息
+接口地址： /api/admin/users
+GET /api/admin/users
+✅ 返回示例：
+{
+  "code": 200,
+  "message": "用户列表获取成功",
   "data": [
     {
-      "recordId": 1,
-      "workOrderId": 1,
-      "technicianId": 1,
-      "description": "做完了",
-      "repairTime": "2025-06-03T20:53:48"
+      "username": "loading1",
+      "name": "sy",
+      "id": 1,
+      "contactInfo": "137",
+      "registerTime": "2025-05-31T21:04:40"
+    },
+    {
+      "username": "loading2",
+      "name": "sy",
+      "id": 4,
+      "contactInfo": "137",
+      "registerTime": "2025-06-02T23:43:21"
     }
   ]
 }
+2. 查询所有维修人员信息
+接口地址：/api /admin/technicians
 
-#### 管理员功能接口
-1. **查询所有用户信息**
-   - **路径**: `GET /api/admin/users`
-   - **请求参数**: 无
-   - **响应**:
-     - 200 OK:
-       ```json
-       [
-         {
-           "userId": int,
-           "username": "string",
-           "name": "string",
-           "contactInfo": "string",
-           "registerTime": "datetime"
-         }
-       ]
-       ```
-   - **说明**: 管理员查询所有用户信息。
+请求方式： GET
 
-2. **查询所有工单**
-   - **路径**: `GET /api/admin/work-orders`
-   - **请求参数**: 无
-   - **响应**:
-     - 200 OK:
-       ```json
-       [
-         {
-           "workOrderId": int,
-           "userId": int,
-           "vehicleId": int,
-           "technicianId": int,
-           "status": "string",
-           "progress": double,
-           "totalCost": double
-         }
-       ]
-       ```
-   - **说明**: 管理员查询所有工单信息。
+功能说明： 查询所有维修人员的基本信息，包括工种与收入
 
-3. **统计车型维修频率**
-   - **路径**: `GET /api/admin/statistics/vehicle-types`
-   - **请求参数**: 无
-   - **响应**:
-     - 200 OK:
-       ```json
-       [
-         {
-           "vehicleType": "string",
-           "repairCount": int,
-           "avgCost": double
-         }
-       ]
-       ```
-   - **说明**: 统计各车型的维修次数和平均费用。
-
-4. **统计维修人员任务量**
-   - **路径**: `GET /api/admin/statistics/technicians`
-   - **请求参数**: `?startDate=yyyy-MM-dd&endDate=yyyy-MM-dd`
-   - **响应**:
-     - 200 OK:
-       ```json
-       [
-         {
-           "technicianId": int,
-           "jobType": "string",
-           "taskCount": int,
-           "taskPercentage": double
-         }
-       ]
-       ```
-   - **说明**: 统计指定时间段内不同工种的任务数量和占比。
-
----
-
-### 示例实现
-
-以下是使用 **Spring Boot** 实现的几个核心接口示例，包括用户注册、提交维修申请和统计车型维修频率。代码基于之前的实体类（artifact_id: f4b0f63d-a120-4180-8540-9afabf648b46）并连接 MySQL 数据库。
-
-<xaiArtifact artifact_id="d8e16b06-af89-4db3-9e21-bb29df0d0990" artifact_version_id="4b90449a-7ae0-40fa-b382-786665f22f28" title="VehicleRepairController.java" contentType="text/x-java">
-package com.vehicle.repair.controller;
-
-import com.vehicle.repair.entity.User;
-import com.vehicle.repair.entity.Vehicle;
-import com.vehicle.repair.entity.WorkOrder;
-import com.vehicle.repair.entity.WorkOrderStatus;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.*;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-
-@RestController
-@RequestMapping("/api")
-public class VehicleRepairController {
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private VehicleRepository vehicleRepository;
-
-    @Autowired
-    private WorkOrderRepository workOrderRepository;
-
-    @PersistenceContext
-    private EntityManager entityManager;
-
-    // 用户注册
-    @PostMapping("/users/register")
-    @Transactional
-    public ResponseEntity<Map<String, Object>> registerUser(@RequestBody Map<String, String> request) {
-        String username = request.get("username");
-        String password = request.get("password"); // 应使用加密，如 BCrypt
-        String name = request.get("name");
-        String contactInfo = request.get("contactInfo");
-
-        if (userRepository.findByUsername(username).isPresent()) {
-            return ResponseEntity.badRequest()
-                    .body(Map.of("error", "用户名已存在"));
-        }
-
-        User user = new User();
-        user.setUsername(username);
-        user.setPassword(password); // 实际中需加密
-        user.setName(name);
-        user.setContactInfo(contactInfo);
-        user.setRegisterTime(LocalDateTime.now());
-        userRepository.save(user);
-
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(Map.of("userId", user.getUserId(), "username", username, "message", "注册成功"));
+GET /api/admin/technicians
+Response：
+{
+  "code": 200,
+  "message": "技师列表获取成功",
+  "data": [
+    {
+      "technicianId": 1,
+      "username": "loading",
+      "name": "sy",
+      "jobType": "漆工",
+      "hourlyRate": 50.0,
+      "contactInfo": "137",
+      "income": 0.0
+    },
+    {
+      "technicianId": 2,
+      "username": "loading1",
+      "name": "sy",
+      "jobType": "漆工",
+      "hourlyRate": 50.0,
+      "contactInfo": "137",
+      "income": 0.0
     }
+  ]
+}
+3. 查询所有车辆信息
+接口地址： /api/admin/vehicles
 
-    // 提交维修申请
-    @PostMapping("/work-orders")
-    @Transactional
-    public ResponseEntity<Map<String, Object>> submitWorkOrder(@RequestBody Map<String, Object> request) {
-        Integer userId = (Integer) request.get("userId");
-        Integer vehicleId = (Integer) request.get("vehicleId");
-        String description = (String) request.get("description");
+请求方式： GET
 
-        if (!userRepository.existsById(userId) || !vehicleRepository.existsById(vehicleId)) {
-            return ResponseEntity.badRequest()
-                    .body(Map.of("error", "车辆或用户不存在"));
-        }
-
-        WorkOrder workOrder = new WorkOrder();
-        workOrder.setUser(userRepository.findById(userId).get());
-        workOrder.setVehicle(vehicleRepository.findById(vehicleId).get());
-        workOrder.setStatus(WorkOrderStatus.待分配);
-        workOrder.setSubmitTime(LocalDateTime.now());
-        workOrder.setProgress(0.0);
-        workOrderRepository.save(workOrder);
-
-        // 记录维修描述到 repair_record
-        RepairRecord record = new RepairRecord();
-        record.setWorkOrder(workOrder);
-        record.setDescription(description);
-        record.setRepairTime(LocalDateTime.now());
-        entityManager.persist(record);
-
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(Map.of("workOrderId", workOrder.getWorkOrderId(), "status", "待分配", "submitTime", workOrder.getSubmitTime()));
+功能说明： 获取所有注册车辆的详细信息
+✅ 示例请求：
+GET /admin/vehicles
+返回:
+{
+  "code": 200,
+  "message": "车辆列表获取成功",
+  "data": [
+    {
+      "vehicleId": 1,
+      "licencePlate": "22345",
+      "vehicleType": "suv",
+      "brand": "benz",
+      "manufactureYear": 2000,
+      "userId": 1
     }
-
-    // 统计车型维修频率
-    @GetMapping("/admin/statistics/vehicle-types")
-    public ResponseEntity<List<Map<String, Object>>> getVehicleTypeStats() {
-        List<Object[]> results = entityManager.createQuery(
-                "SELECT v.vehicleType, COUNT(w), AVG(w.totalCost) " +
-                "FROM Vehicle v JOIN v.workOrders w " +
-                "GROUP BY v.vehicleType", Object[].class)
-                .getResultList();
-
-        List<Map<String, Object>> stats = results.stream().map(row -> Map.of(
-                "vehicleType", row[0],
-                "repairCount", row[1],
-                "avgCost", row[2]
-        )).toList();
-
-        return ResponseEntity.ok(stats);
-    }
+  ]
 }
+4. 查询所有维修工单信息
+接口地址： /api/admin/work-orders
 
-@Repository
-interface UserRepository extends JpaRepository<User, Integer> {
-    Optional<User> findByUsername(String username);
-    boolean existsById(Integer id);
-}
+请求方式： GET
 
-@Repository
-interface VehicleRepository extends JpaRepository<Vehicle, Integer> {
-    boolean existsById(Integer id);
-}
+功能说明： 查询所有维修工单，包括进度、维修人员和车辆信息
+GET /api/admin/work-orders
+格式同用户返回工单
 
-@Repository
-interface WorkOrderRepository extends JpaRepository<WorkOrder, Integer> {}
-</xaiArtifact>
+5. 查询所有历史维修记录与工时费发放
+接口地址： /api/admin/repair-records
 
----
+请求方式： GET
 
-### 实现说明
-1. **接口实现**：
-   - **用户注册**：检查用户名唯一性，保存用户数据，密码应使用加密（如 BCrypt，示例中简化处理）。
-   - **提交维修申请**：验证用户和车辆存在，创建工单并记录初始维修描述，使用 `@Transactional` 确保数据一致性。
-   - **统计车型维修频率**：使用 JPQL 查询多表连接，计算每种车型的维修次数和平均费用。
-2. **依赖**：
-   - 基于 Spring Boot 和 Spring Data JPA，依赖之前的实体类。
-   - 需要配置 `application.properties` 连接 MySQL 数据库，例如：
-     ```properties
-     spring.datasource.url=jdbc:mysql://localhost:3306/vehicle_repair
-     spring.datasource.username=root
-     spring.datasource.password=your_password
-     spring.jpa.hibernate.ddl-auto=validate
-     ```
-3. **事务控制**：
-   - 使用 `@Transactional` 确保工单生成和维修记录插入同时成功或回滚，满足需求中的事务控制要求。
-4. **数据一致性**：
-   - 外键约束和级联删除已在数据库表结构中定义（artifact_id: cb53a171-ff61-4048-b4c4-7056029da485）。
-   - 触发器（如工单状态改为“已完成”时计算费用）可进一步通过 MySQL 实现。
-
-
+格式同用户返回维修记录

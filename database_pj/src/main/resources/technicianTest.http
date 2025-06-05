@@ -11,23 +11,37 @@ Content-Type: application/json
   "contactInfo": "137",
   "income": 0
 }
+
+###
+POST http://localhost:3000/api/technicians/register
+Content-Type: application/json
+
+{
+  "username": "loading2",
+  "password": "asdasda1",
+  "name": "sy",
+  "jobType": "漆工",
+  "hourlyRate": 50,
+  "contactInfo": "137",
+  "income": 0
+}
 ###
 POST http://localhost:3000/api/technicians/login
 Content-Type: application/json
 
 {
-  "username": "loading",
+  "username": "loading1",
   "password": "asdasda1"
 }
 
 ###
 GET http://localhost:3000/api/technicians/1
 ###
-PUT http://localhost:3000/api/technicians/1/work-orders/1/4/updateStatus
+PUT http://localhost:3000/api/technicians/1/work-orders/1/1/updateStatus
 Content-Type: application/json
 
 {
-  "action": "reject"
+  "action": "accept"
 }
 
 ###
@@ -57,4 +71,7 @@ Content-Type: application/json
 GET http://localhost:3000/api/technicians/1/repair-records
 
 ###
-GET http://localhost:3000/api/technicians/2/notifications
+GET http://localhost:3000/api/technicians/1/notifications
+
+###
+GET http://localhost:3000/api/technicians/1/work-orders
