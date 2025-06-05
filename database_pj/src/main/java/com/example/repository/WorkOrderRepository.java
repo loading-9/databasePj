@@ -35,7 +35,7 @@ public interface WorkOrderRepository extends JpaRepository<WorkOrder, Long> {
 
     List<WorkOrder> findByTechnician(Technician technician);
 
-    @Query("""
+    /* @Query("""
         SELECT new com.example.dto.AdvancedStats.VehicleRepairStatsDTO(
             v.vehicleType,
             COUNT(w),
@@ -51,9 +51,9 @@ public interface WorkOrderRepository extends JpaRepository<WorkOrder, Long> {
         JOIN w.vehicle v
         GROUP BY v.vehicleType
     """)
-    List<VehicleRepairStatsDTO> findVehicleRepairStats();
+    List<VehicleRepairStatsDTO> findVehicleRepairStats(); */
 
-    @Query("""
+    /* @Query("""
         SELECT new com.example.dto.AdvancedStats.VehicleRepairStatsDTO(
             v.vehicleType,
             COUNT(w),
@@ -70,9 +70,9 @@ public interface WorkOrderRepository extends JpaRepository<WorkOrder, Long> {
         WHERE v.vehicleType = :vehicleType
         GROUP BY v.vehicleType
     """)
-    VehicleRepairStatsDTO findVehicleRepairStatsByType(@Param("vehicleType") String vehicleType);
+    VehicleRepairStatsDTO findVehicleRepairStatsByType(@Param("vehicleType") String vehicleType); */
 
-    @Query("""
+    /* @Query("""
     SELECT new com.example.dto.AdvancedStats.CostAnalysisDTO(
         CONCAT(YEAR(w.completeTime), '-', MONTH(w.completeTime)),
         SUM(w.laborCost),
@@ -86,7 +86,7 @@ public interface WorkOrderRepository extends JpaRepository<WorkOrder, Long> {
     AND w.completeTime BETWEEN :startTime AND :endTime
     GROUP BY YEAR(w.completeTime), MONTH(w.completeTime)
 """)
-    List<CostAnalysisDTO> findCostAnalysisByMonth(@Param("startTime") LocalDateTime startTime, @Param("endTime") LocalDateTime endTime);
+    List<CostAnalysisDTO> findCostAnalysisByMonth(@Param("startTime") LocalDateTime startTime, @Param("endTime") LocalDateTime endTime); */
 
     @Query("""
         SELECT new com.example.dto.AdvancedStats.NegativeFeedbackDTO(
@@ -104,7 +104,7 @@ public interface WorkOrderRepository extends JpaRepository<WorkOrder, Long> {
     """)
     List<NegativeFeedbackDTO> findNegativeFeedbackWorkOrders();
 
-    @Query("""
+    /* @Query("""
         SELECT new com.example.dto.AdvancedStats.TaskStatsDTO(
             t.jobType,
             COUNT(w),
@@ -116,7 +116,7 @@ public interface WorkOrderRepository extends JpaRepository<WorkOrder, Long> {
         WHERE w.completeTime IS NOT NULL
         GROUP BY t.jobType
     """)
-    List<TaskStatsDTO> findTaskStatsByJobType();
+    List<TaskStatsDTO> findTaskStatsByJobType(); */
 
     @Query("""
         SELECT new com.example.dto.AdvancedStats.PendingWorkOrderDTO(

@@ -69,7 +69,7 @@ public class AdminService {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    // 统计车型维修次数与平均费用
+    /* // 统计车型维修次数与平均费用
     public ApiResponse<List<VehicleRepairStatsDTO>> getVehicleRepairStats() {
         List<VehicleRepairStatsDTO> stats = workOrderRepository.findVehicleRepairStats();
         return new ApiResponse<>(200, "车型维修统计查询成功", stats);
@@ -82,10 +82,10 @@ public class AdminService {
             return new ApiResponse<>(404, "未找到该车型的维修记录", null);
         }
         return new ApiResponse<>(200, "车型维修统计查询成功", stats);
-    }
+    } */
 
     // 按月统计维修费用构成
-    public ApiResponse<List<CostAnalysisDTO>> getCostAnalysisByMonth(LocalDateTime startTime, LocalDateTime endTime) {
+    /* public ApiResponse<List<CostAnalysisDTO>> getCostAnalysisByMonth(LocalDateTime startTime, LocalDateTime endTime) {
         List<CostAnalysisDTO> analysis = workOrderRepository.findCostAnalysisByMonth(startTime, endTime);
         return new ApiResponse<>(200, "费用分析查询成功", analysis);
     }
